@@ -1,27 +1,31 @@
-incarnation: protelis
+incarnation: scafi
 
+variables:
+  seed: {min: 0, max: 0, step: 1, default: 0}
+environment:
+  type: Continuous2DEnvironment
+  parameters: []
+  global-programs:
+    - time-distribution: 1
+      type: CollectiveLearning
+      parameters: [ 0.05, 0.5 ]
 network-model:
-  type: ConnectWithinDistance
-  parameters: [0.5]
+  type: ClosestN
+  parameters: [5]
 
-_gradient: &gradient
-  - time-distribution: 1
-    # Writing Protelis programs within a YAML file is a bad experience
-    # (some characters need escaping, no syntax highlight, no code suggestions...)
-    # We recommend using the Protelis Eclipse plugin to write your code, then
-    # Loading the code as a module within Alchemist
-    # In order to run this example, make sure that src/main/protelis is part of
-    # your classpath (the Gradle script is already properly configured).
-    program: org:protelis:tutorial:distanceTo
-  - program: send
+_reactions:
+  - program: &program
+      - time-distribution:
+          type: DiracComb
+          parameters: [ 1.0 ]
+        type: Event
+        actions:
+          - type: RunScafiProgram
+            parameters: [it.unibo.AggregateComputingAgent, 1.1]
+      - program: send
 
 deployments:
   type: Grid
-  parameters: [-5, -5, 5, 5, 0.25, 0.25, 0.1, 0.1]
-  contents:
-    - in:
-        type: Rectangle
-        parameters: [-6, -6, 2, 2]
-      molecule: source
-      concentration: true
-  programs: *gradient
+  parameters: [-5, -5, 5, 5, 2, 2, 1, 1]
+  programs:
+    - *program

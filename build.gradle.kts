@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.qa)
     alias(libs.plugins.multiJvmTesting)
     alias(libs.plugins.taskTree)
+    scala
 }
 
 repositories {
@@ -38,10 +39,10 @@ multiJvm {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation(libs.bundles.alchemist.protelis)
-    if (!GraphicsEnvironment.isHeadless()) {
-        implementation("it.unibo.alchemist:alchemist-swingui:${libs.versions.alchemist.get()}")
-    }
+    implementation(libs.bundles.alchemist.scafi)
+    implementation("it.unibo.alchemist:alchemist-swingui:${libs.versions.alchemist.get()}")
+    // Scalapy
+    implementation(libs.scalapy)// https://mvnrepository.com/artifact/org.scala-lang/scala-library
 }
 
 // Heap size estimation for batches
@@ -111,7 +112,7 @@ File(rootProject.rootDir.path + "/src/main/yaml").listFiles()
             args(
                 "-e", "data/${it.nameWithoutExtension}",
                 "-b",
-                "-var", "seed", "speed", "meanNeighbors", "nodeCount",
+                "-var", "seed",
                 "-p", threadCount,
                 "-i", 1
             )
