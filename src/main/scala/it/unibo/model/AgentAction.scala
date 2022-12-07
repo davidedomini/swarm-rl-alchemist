@@ -15,7 +15,7 @@ object AgentAction {
   final case object StandStill extends AgentAction
 
   val actionSpace: Seq[AgentAction] =
-    Seq(North, South, East, West, NorthEast, NorthWest, SouthEast, SouthWest /*, StandStill*/ )
+    Seq(North, South, East, West, NorthEast, NorthWest, SouthEast, SouthWest, StandStill)
 
   def sample(implicit random: Random): AgentAction = random.shuffle(actionSpace).head
 }

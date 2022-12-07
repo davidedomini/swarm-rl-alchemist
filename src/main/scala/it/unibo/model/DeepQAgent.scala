@@ -1,7 +1,9 @@
 package it.unibo.model
 
+import it.unibo.model.Agent.Training
 import it.unibo.model.network.torch._
 import it.unibo.model.network.{DQN, NeuralNetworkEncoding}
+import it.unibo.util.LiveLogger
 import me.shadaj.scalapy.py
 import me.shadaj.scalapy.py.{PyQuote, SeqConverters}
 
@@ -21,9 +23,10 @@ class DeepQAgent[State, Action](
   private var updates = 0
   private val targetNetwork = DQN(encoding.elements, 32, actionSpace.size)
   private val policyNetwork = DQN(encoding.elements, 32, actionSpace.size)
-
   private val optimizer = optim.RMSprop(policyNetwork.parameters(), learningRate)
+
   val optimal: State => Action = state => actionFromNet(state, targetNetwork)
+
   val behavioural: State => Action = state =>
     if (random.nextDouble() < epsilon) {
       random.shuffle(actionSpace).head
@@ -32,7 +35,7 @@ class DeepQAgent[State, Action](
   override def record(state: State, action: Action, reward: Double, nextState: State): Unit =
     memory.insert(state, action, reward, nextState)
 
-  override def improve(): Unit = {
+  override def improve(): Unit = if (this.mode == Training) {
     val memorySample = memory.sample(batchSize)
     if (memory.sample(batchSize).size == batchSize) {
       val states = memorySample.map(_.state).toSeq.map(state => encoding.toSeq(state).toPythonCopy).toPythonCopy
@@ -44,7 +47,7 @@ class DeepQAgent[State, Action](
       val expectedValue = (nextStateValues * gamma) + rewards
       val criterion = nn.SmoothL1Loss()
       val loss = criterion(stateActionValue, expectedValue.unsqueeze(1))
-      writer.add_scalar("Loss", loss, updates)
+      LiveLogger.logScalar("Loss", loss.item().as[Double], updates)
       optimizer.zero_grad()
       loss.backward()
       py"[param.grad.data.clamp_(-1, 1) for param in ${policyNetwork.parameters()}]"
@@ -61,7 +64,8 @@ class DeepQAgent[State, Action](
     val timeMark = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date)
     torch.save(targetNetwork.state_dict(), s"data/network-$episode-$timeMark")
   }
-  def loadFrom(string: String) =
+
+  def loadFrom(string: String): py.Dynamic =
     targetNetwork.load_state_dict(torch.load(string))
 
   private def actionFromNet(state: State, network: py.Dynamic): Action = {

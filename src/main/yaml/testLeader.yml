@@ -1,23 +1,21 @@
 incarnation: scafi
 
 variables:
-  seed: {min: 0, max: 0, step: 1, default: 0}
+  seed: { min: 0, max: 0, step: 1, default: 0 }
 environment:
   type: Continuous2DEnvironment
   parameters: []
   global-programs:
     - time-distribution: 1
-      type: CollectiveLearning
-      parameters: [ 0.05, 0.5 ]
+      type: CentralServer
+      parameters: [ 0.05, 0.5, "data/long-run" ]
 network-model:
   type: ClosestN
   parameters: [5]
 
 _reactions:
   - program: &program
-      - time-distribution:
-          type: DiracComb
-          parameters: [ 1.0 ]
+      - time-distribution: 1
         type: Event
         actions:
           - type: RunScafiProgram
@@ -26,6 +24,6 @@ _reactions:
 
 deployments:
   type: Grid
-  parameters: [-5, -5, 5, 5, 2, 2, 1, 1]
+  parameters: [-7, -7, 7, 7, 2, 2, 1, 1]
   programs:
     - *program
