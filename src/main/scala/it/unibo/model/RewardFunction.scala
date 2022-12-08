@@ -1,6 +1,5 @@
 package it.unibo.model
 
-import it.unibo.alchemist.model.implementations.reactions.GlobalContext
 import it.unibo.scafi.space.Point3D
 import it.unibo.util.LiveLogger
 import CohesionAndCollision._

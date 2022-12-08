@@ -1,14 +1,10 @@
 package it.unibo.alchemist.model.implementations.reactions
 
-import it.unibo.AggregateComputingRLAgent
 import it.unibo.AggregateComputingRLAgent.AgentResult
 import it.unibo.alchemist.model.interfaces.{Environment, Position, Time, TimeDistribution}
 import it.unibo.context._
-import it.unibo.model.Actuator.covertToMovement
 import it.unibo.model._
 import it.unibo.util.LiveLogger
-
-import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class CentralLearner[T, P <: Position[P]](
     environment: Environment[T, P],
@@ -17,7 +13,7 @@ class CentralLearner[T, P <: Position[P]](
     targetDistance: Double,
     val rewardFunction: RewardFunction
 ) extends AbstractGlobalReaction[T, P](environment, distribution) {
-  private var memory: List[AgentResult] = List.empty // used to store the last collective experience
+  private var memory: Seq[AgentResult] = List.empty // used to store the last collective experience
   private var initialPosition: List[P] = List.empty[P] // used to restart the simulation with the same configuration
   private var updates = 0
   private val epsilon = DecayReference.exponentialDecay(0.9, 0.10).bounded(0.01)
@@ -32,24 +28,15 @@ class CentralLearner[T, P <: Position[P]](
   )
   learner.trainingMode()
 
-  override def execute(): Unit = {
+  override def executeBeforeUpdateDistribution(): Unit = {
     if (environment.getSimulation.getTime.toDouble > 1) { // skip the first tick
-      val stateAndActions = agents
-        .map(_.getContents.values().asScala)
-        .map(_.filter(_.isInstanceOf[AggregateComputingRLAgent.AgentResult]).head)
-        .map(_.asInstanceOf[AggregateComputingRLAgent.AgentResult])
+      val stateAndActions = stateAndAction
       val actions = stateAndActions.map(_.action)
       val states = stateAndActions.map(_.state)
       improvePolicy(states)
       memory = stateAndActions
-      agents.zip(actions).foreach { case (node, action) =>
-        environment.moveNodeToPosition(
-          node,
-          environment.getPosition(node).plus(covertToMovement(action, environment, deltaMovement).getCoordinates)
-        )
-      }
+      CollectiveAction.moveAll(this, deltaMovement)
     }
-    distribution.update(getTimeDistribution.getNextOccurence, true, getRate, environment)
   }
 
   override def initializationComplete(time: Time, environment: Environment[T, _]): Unit =

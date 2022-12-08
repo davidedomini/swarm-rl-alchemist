@@ -1,11 +1,14 @@
 package it.unibo.alchemist.model.implementations.reactions
 
+import it.unibo.AggregateComputingRLAgent
+import it.unibo.AggregateComputingRLAgent.AgentResult
 import it.unibo.alchemist.model.implementations.nodes.SimpleNodeManager
 import it.unibo.alchemist.model.interfaces._
+import it.unibo.model.{AgentAction, GlobalContext, State}
 import org.danilopianini.util.{ListSet, ListSets}
 
 import java.util
-import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala}
 
 abstract class AbstractGlobalReaction[T, P <: Position[P]](
     val environment: Environment[T, P],
@@ -24,6 +27,13 @@ abstract class AbstractGlobalReaction[T, P <: Position[P]](
     conditions.clear()
     conditions.addAll(list)
   }
+
+  override def execute(): Unit = {
+    executeBeforeUpdateDistribution()
+    distribution.update(getTimeDistribution.getNextOccurence, true, getRate, environment)
+  }
+
+  protected def executeBeforeUpdateDistribution(): Unit
 
   override def getConditions: util.List[Condition[T]] = conditions
 
@@ -45,7 +55,10 @@ abstract class AbstractGlobalReaction[T, P <: Position[P]](
 
   override def getTau: Time = distribution.getNextOccurence
 
+  // Utilities methods
+
   def agents = environment.getNodes.iterator().asScala.toList
 
   def managers = agents.map(new SimpleNodeManager[T](_))
+
 }
