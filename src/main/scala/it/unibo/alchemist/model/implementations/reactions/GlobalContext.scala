@@ -9,4 +9,5 @@ trait GlobalContext[T, P <: Position[P]] {
   def managers: List[NodeManager]
 
   def environment: Environment[T, P]
+
 }

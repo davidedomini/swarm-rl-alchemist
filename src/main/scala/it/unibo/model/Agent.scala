@@ -28,6 +28,9 @@ trait Agent[Observation, Action] {
 
   /** Enter in the test mode */
   def testMode(): Unit = this.modeMemory = Test
+
+  /** Store the internal status of the agent */
+  def snapshot(episode: Int): Unit
 }
 
 object Agent {

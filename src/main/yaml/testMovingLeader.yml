@@ -27,7 +27,7 @@ _reactions:
         type: Event
         actions:
           - type: RunScafiProgram
-            parameters: [it.unibo.FollowTheLeaderAgent, 1.1]
+            parameters: [it.unibo.FollowTheMovingLeaderAgent, 1.1]
       - program: send
 
 deployments:

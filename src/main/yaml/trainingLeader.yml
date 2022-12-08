@@ -16,7 +16,7 @@ environment:
   global-programs:
     - time-distribution: 1
       type: CentralServer
-      parameters: [ 0.05, *targetDistance, "", *rewardFunction]
+      parameters: [ 0.05, *targetDistance, *rewardFunction]
 
 network-model:
   type: ClosestN

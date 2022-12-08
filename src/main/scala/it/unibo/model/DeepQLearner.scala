@@ -10,27 +10,31 @@ import me.shadaj.scalapy.py.{PyQuote, SeqConverters}
 import java.text.SimpleDateFormat
 import java.util.Date
 import scala.util.Random
-class DeepQAgent[State, Action](
+
+class DeepQLearner[State, Action](
     memory: ReplyBuffer[State, Action],
     actionSpace: Seq[Action],
     var epsilon: DecayReference[Double],
     gamma: Double,
     learningRate: Double,
     batchSize: Int = 32,
-    val updateEach: Int = 100
+    val updateEach: Int = 100,
+    val hiddenSize: Int = 32
 )(implicit encoding: NeuralNetworkEncoding[State], random: Random)
     extends Agent[State, Action] {
   private var updates = 0
-  private val targetNetwork = DQN(encoding.elements, 32, actionSpace.size)
-  private val policyNetwork = DQN(encoding.elements, 32, actionSpace.size)
+  private val targetNetwork = DQN(encoding.elements, hiddenSize, actionSpace.size)
+  private val policyNetwork = DQN(encoding.elements, hiddenSize, actionSpace.size)
+  private val targetPolicy = DeepQLearner.policyFromNetwork(policyNetwork, encoding, actionSpace)
+  private val behaviouralPolicy = DeepQLearner.policyFromNetwork(policyNetwork, encoding, actionSpace)
   private val optimizer = optim.RMSprop(policyNetwork.parameters(), learningRate)
 
-  val optimal: State => Action = state => actionFromNet(state, targetNetwork)
+  val optimal: State => Action = targetPolicy
 
   val behavioural: State => Action = state =>
     if (random.nextDouble() < epsilon) {
       random.shuffle(actionSpace).head
-    } else actionFromNet(state, policyNetwork)
+    } else behaviouralPolicy(state)
 
   override def record(state: State, action: Action, reward: Double, nextState: State): Unit =
     memory.insert(state, action, reward, nextState)
@@ -55,7 +59,6 @@ class DeepQAgent[State, Action](
       updates += 1
       if (updates % updateEach == 0) {
         targetNetwork.load_state_dict(policyNetwork.state_dict())
-
       }
     }
   }
@@ -64,16 +67,27 @@ class DeepQAgent[State, Action](
     val timeMark = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date)
     torch.save(targetNetwork.state_dict(), s"data/network-$episode-$timeMark")
   }
+}
 
-  def loadFrom(string: String): py.Dynamic =
-    targetNetwork.load_state_dict(torch.load(string))
+object DeepQLearner {
+  def policyFromNetworkSnapshot[S, A](
+      path: String,
+      hiddenSize: Int,
+      encoding: NeuralNetworkEncoding[S],
+      actionSpace: Seq[A]
+  ): S => A = {
+    val model = DQN(encoding.elements, hiddenSize, actionSpace.size)
+    model.load_state_dict(torch.load(path))
+    policyFromNetwork(model, encoding, actionSpace)
+  }
 
-  private def actionFromNet(state: State, network: py.Dynamic): Action = {
-    val netInput = encoding.toSeq(state)
-    py.`with`(torch.no_grad()) { _ =>
-      val tensor = torch.tensor(netInput.toPythonCopy).view(1, encoding.elements)
-      val actionIndex = network(tensor).max(1).bracketAccess(1).item().as[Int]
-      actionSpace.toList(actionIndex)
-    }
+  def policyFromNetwork[S, A](network: py.Dynamic, encoding: NeuralNetworkEncoding[S], actionSpace: Seq[A]): S => A = {
+    state =>
+      val netInput = encoding.toSeq(state)
+      py.`with`(torch.no_grad()) { _ =>
+        val tensor = torch.tensor(netInput.toPythonCopy).view(1, encoding.elements)
+        val actionIndex = network(tensor).max(1).bracketAccess(1).item().as[Int]
+        actionSpace(actionIndex)
+      }
   }
 }

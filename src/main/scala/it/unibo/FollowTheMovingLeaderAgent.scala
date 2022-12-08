@@ -2,18 +2,27 @@ package it.unibo
 
 import it.unibo.AggregateComputingRLAgent.AgentResult
 import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
+import it.unibo.model.AgentAction.{East, North, NorthWest, South, SouthEast, StandStill, West}
 import it.unibo.model.{AgentAction, State}
 import it.unibo.scafi.space.Point3D
 
-class FollowTheLeaderAgent
+import scala.collection.immutable.Queue
+
+class FollowTheMovingLeaderAgent
     extends AggregateProgram
     with AggregateComputingRLAgent
     with FieldUtils
     with StandardSensors
     with BlockG
+    with BlockS
     with ScafiAlchemistSupport
     with CustomSpawn {
 
+  private val movesWithTheSameDirection = 100
+  private val waitFor = 3
+  private var leaderMoves = Queue(North, East, SouthEast, South, West)
+    .flatMap(List.fill(movesWithTheSameDirection)(_))
+    .flatMap(_ :: List.fill(waitFor)(StandStill))
   private lazy val leader = sense[Int]("leaderId") == mid()
   def main(): AgentResult = {
     node.put("isLeader", leader)
@@ -30,7 +39,9 @@ class FollowTheLeaderAgent
     if (distances.size == agentSpace && !leader) {
       AgentResult(state, getPolicy(state))
     } else {
-      AgentResult(state, AgentAction.StandStill)
+      val currentMove = leaderMoves.head
+      leaderMoves = leaderMoves.tail :+ currentMove
+      AgentResult(state, currentMove)
     }
   }
 }

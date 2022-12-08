@@ -1,13 +1,10 @@
 package it.unibo
 
 import it.unibo.AggregateComputingRLAgent.AgentResult
-import it.unibo.alchemist.model.implementations.reactions.CentralServer
 import it.unibo.alchemist.model.scafi.ScafiIncarnationForAlchemist._
 import it.unibo.model.AgentAction.StandStill
-import it.unibo.model.{AgentAction, State}
+import it.unibo.model.State
 import it.unibo.scafi.space.Point3D
-
-import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 class CohesionAndCollisionAgent
     extends AggregateProgram
@@ -17,7 +14,6 @@ class CohesionAndCollisionAgent
     with BlockG
     with ScafiAlchemistSupport
     with CustomSpawn {
-
   def main(): AgentResult = {
     val distances = excludingSelf
       .reifyField(nbrVector())
@@ -33,4 +29,7 @@ class CohesionAndCollisionAgent
       AgentResult(state, StandStill)
     }
   }
+
+  override def dropStandStill: Boolean = true
+
 }

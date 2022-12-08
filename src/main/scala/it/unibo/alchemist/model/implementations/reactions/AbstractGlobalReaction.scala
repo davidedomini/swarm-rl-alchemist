@@ -26,7 +26,9 @@ abstract class AbstractGlobalReaction[T, P <: Position[P]](
   }
 
   override def getConditions: util.List[Condition[T]] = conditions
+
   override def getInboundDependencies: ListSet[_ <: Dependency] = ListSets.emptyListSet()
+
   override def getOutboundDependencies: ListSet[_ <: Dependency] = ListSets.emptyListSet()
 
   override def getTimeDistribution: TimeDistribution[T] = distribution
