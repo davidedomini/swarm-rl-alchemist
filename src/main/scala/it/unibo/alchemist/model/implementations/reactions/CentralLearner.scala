@@ -11,7 +11,8 @@ class CentralLearner[T, P <: Position[P]](
     distribution: TimeDistribution[T],
     deltaMovement: Double,
     targetDistance: Double,
-    val rewardFunction: RewardFunction
+    val rewardFunction: RewardFunction,
+    val actionSpace: Seq[AgentAction]
 ) extends AbstractGlobalReaction[T, P](environment, distribution) {
   private var memory: Seq[AgentResult] = List.empty // used to store the last collective experience
   private var initialPosition: List[P] = List.empty[P] // used to restart the simulation with the same configuration
@@ -20,7 +21,7 @@ class CentralLearner[T, P <: Position[P]](
 
   val learner = new DeepQLearner[State, AgentAction](
     ReplyBuffer.bounded(100000),
-    AgentAction.actionSpace,
+    actionSpace,
     epsilon,
     0.90,
     0.0005,

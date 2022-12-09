@@ -9,6 +9,7 @@ variables:
       import it.unibo.script._
       new it.unibo.model.FollowTheLeader(leaderId, targetDistance)
     language: scala
+  actionSpace: &actionSpace { formula: it.unibo.model.AgentAction.actionSpace, language: scala }
 
 environment:
   type: Continuous2DEnvironment
@@ -16,7 +17,7 @@ environment:
   global-programs:
     - time-distribution: 1
       type: CentralServer
-      parameters: [ 0.05, *targetDistance, *rewardFunction]
+      parameters: [ 0.05, *targetDistance, *rewardFunction, *actionSpace]
 
 network-model:
   type: ClosestN

@@ -17,5 +17,8 @@ object AgentAction {
   val actionSpace: Seq[AgentAction] =
     Seq(North, South, East, West, NorthEast, NorthWest, SouthEast, SouthWest, StandStill)
 
+  val actionSpaceWithoutStandStill: Seq[AgentAction] =
+    actionSpace.filter(_ != StandStill)
+
   def sample(implicit random: Random): AgentAction = random.shuffle(actionSpace).head
 }

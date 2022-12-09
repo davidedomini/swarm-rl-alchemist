@@ -14,9 +14,8 @@ trait AggregateComputingRLAgent {
 
   def dropStandStill: Boolean = false
 
-  private def actionSpace: Seq[AgentAction] = if (dropStandStill) {
-    AgentAction.actionSpace.filter(_ == AgentAction.StandStill)
-  } else AgentAction.actionSpace
+  private def actionSpace: Seq[AgentAction] = if (dropStandStill) AgentAction.actionSpaceWithoutStandStill
+  else AgentAction.actionSpace
 
   protected lazy val agentSpace = 5
 
