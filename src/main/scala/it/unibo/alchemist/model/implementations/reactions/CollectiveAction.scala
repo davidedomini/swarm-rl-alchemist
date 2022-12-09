@@ -10,7 +10,6 @@ class CollectiveAction[T, P <: Position[P]](
     deltaMovement: Double
 ) extends AbstractGlobalReaction[T, P](environment, distribution) {
   override def executeBeforeUpdateDistribution(): Unit =
-    // TODO refactor this
     CollectiveAction.moveAll(this, deltaMovement)
 }
 

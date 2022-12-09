@@ -1,14 +1,12 @@
 package it.unibo.alchemist.model.implementations.reactions
 
-import it.unibo.AggregateComputingRLAgent
-import it.unibo.AggregateComputingRLAgent.AgentResult
 import it.unibo.alchemist.model.implementations.nodes.SimpleNodeManager
 import it.unibo.alchemist.model.interfaces._
-import it.unibo.model.{AgentAction, GlobalContext, State}
+import it.unibo.model.GlobalContext
 import org.danilopianini.util.{ListSet, ListSets}
 
 import java.util
-import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala}
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 abstract class AbstractGlobalReaction[T, P <: Position[P]](
     val environment: Environment[T, P],

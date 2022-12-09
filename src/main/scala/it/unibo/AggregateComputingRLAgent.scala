@@ -25,7 +25,7 @@ trait AggregateComputingRLAgent {
       .getOption[String]("policyPath")
       .map(path =>
         DeepQLearner
-          .policyFromNetworkSnapshot(path, 32, implicitly[NeuralNetworkEncoding[State]], AgentAction.actionSpace)
+          .policyFromNetworkSnapshot(path, 32, implicitly[NeuralNetworkEncoding[State]], actionSpace)
       )
       .getOrElse {
         alchemistEnvironment.getGlobalReactions

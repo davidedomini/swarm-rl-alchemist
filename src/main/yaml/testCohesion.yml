@@ -1,0 +1,44 @@
+incarnation: scafi
+
+variables:
+  seed: {min: 0, max: 0, step: 1, default: 0}
+  leaderId: &leaderId { formula: 12 }
+
+_policy: &policy >
+  "result/reference-cohesion"
+
+
+environment:
+  type: Continuous2DEnvironment
+  parameters: []
+  global-programs:
+    - time-distribution: 1
+      type: CollectiveAction
+      parameters: [ 0.05 ]
+network-model:
+  type: ClosestN
+  parameters: [5]
+
+_reactions:
+  - program: &program
+      - time-distribution:
+          type: DiracComb
+          parameters: [ 1.0 ]
+        type: Event
+        actions:
+          - type: RunScafiProgram
+            parameters: [it.unibo.CohesionAndCollisionAgent, 1.1]
+      - program: send
+
+deployments:
+  type: Grid
+  parameters: [-5, -5, 5, 5, 2, 2, 1, 1]
+  programs:
+    - *program
+  contents:
+    - molecule: leaderId
+      concentration: *leaderId
+    - molecule: policyPath
+      concentration: *policy
+
+

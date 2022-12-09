@@ -49,7 +49,7 @@ class FollowTheLeader(referenceId: Int, targetDistance: Double) extends RewardFu
     val center = agents.filter(_.getId == referenceId).head
     val rewardLeaderDistance = agents.map(
       -environment.getDistanceBetweenNodes(_, center)
-    ) // .map(distance => if(distances < targetDistance) { 0.0 } else { targetDistance })
+    )
     val distances = computeDistancesFromNeighborhood(states)
     val collisionReward = collisionFactor(distances, targetDistance)
     LiveLogger.logScalar("Reward collision", collisionReward.sum, ticks)
