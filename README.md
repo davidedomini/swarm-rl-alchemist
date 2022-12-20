@@ -25,8 +25,10 @@ of the relative distance to the neighborhood.
 The action that each agent could perform consist in 8 possible direction (north, south, east, ...)
 
 This is the performance at the beginning of the training phase:
+![cohesion-start](https://user-images.githubusercontent.com/23448811/208730482-ac25acce-db44-43b6-adc6-4adcc92e9753.gif)
 
 This is the learned policy:
+![end](https://user-images.githubusercontent.com/23448811/208730510-b7d7a7d8-a2cc-4d59-aaf2-04f1d564dc7d.gif)
 
 ## Scenario 2: Follow the leader
 
@@ -35,6 +37,8 @@ deep reinforcement learning. In particular, in this case aggregate computing is 
 the information of the leader in the system. Then, Q learning is used to learn how to follow it.
 
 This is the performance at the beginning of the training phase:
+![start](https://user-images.githubusercontent.com/23448811/208730521-07093c9e-f8b4-4c2b-a479-c1847dd7c56f.gif)
 
 This is the learned policy:
+![end-leader](https://user-images.githubusercontent.com/23448811/208730533-1ee21f1e-eab7-4d2f-93f1-833d532a2832.gif)
 
