@@ -31,12 +31,9 @@ jobs:
         os: [ windows, macos, ubuntu ]
     runs-on: ${{ matrix.os }}-latest
     steps:
-    - name: Install pyenv
-      uses: gabrielfalcao/pyenv-action@v10
+    - uses: actions/setup-python@v4
       with:
-        command: pyenv install
-    - name: Install Python
-      run: pyenv install
+        python-version: '3.10'
     - name: Upgrade pip
       run: pip install --upgrade pip --user
     - name: Install requirements
