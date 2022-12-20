@@ -1,62 +1,40 @@
-# Alchemist Primer
+# Large-Scale Multi-Agent Reinforcement Learning with Alchemist
 
-This is a template project to spawn projects using the [Alchemist Simulator](https://github.com/AlchemistSimulator/Alchemist).
-It provides a pre-configured gradle build.
+This repository contains two examples in which we use Alchemist as simulator 
+in a context of multi agent deep reinforcement learning.
 
-This project is a quick start for the [Alchemist](https://github.com/AlchemistSimulator/Alchemist) simulator, it shows how to use the simulator via [Gradle](https://gradle.org) to run a simple simulation. More information can be found on [the official Alchemist website](https://alchemistsimulator.github.io).
+More details about Alchemist, its execution model, its main abstractions could 
+be found in the [primer repository](https://github.com/AlchemistSimulator/alchemist-primer)
+and in the [official website](http://alchemistsimulator.github.io/).
 
-## Prerequisites
+## General description
+Each simulation is described in [src/main/yaml/](src/main/yaml/). 
+Configurations that start with `training` are the one in which homogenous Deep Q Learning is deployed.
+Simulation that start with `test` are the one in which the agent directly use the learned Q table to perform their action.
+The collective movement is performed at each simulated time unit. The progression is collectively made.
+Both the scenario use the same technique for training: a central deep q learner gather the experience and improve the 
+shared Q table with them. At the end, the best Q table is shared with the whole collective.
 
-Alchemist's prerequisites can be found [here](https://alchemistsimulator.github.io/wiki/usage/installation/).
+## Scenario 1: Learn to 'Flock'
+In this scenario
+(described in [testCohesion.yml](./src/main/yaml/testCohesion.yml) and
+[trainingCohesion.yml](./src/main/yaml/trainingCohesion.yml)
+) a group of 20 agent learn how to stay close with each other without colliding. 
+Each agent has a fixed neighborhood (the four closest). The state of each agent consist 
+of the relative distance to the neighborhood. 
+The action that each agent could perform consist in 8 possible direction (north, south, east, ...)
 
-## How to launch
+This is the performance at the beginning of the training phase:
 
-To run the example you can rely on the pre-configured [Gradle](https://gradle.org) build script.
-It will automatically download all the required libraries, set up the environment, and execute the simulator via command line for you.
-As first step, use `git` to locally clone this repository.
+This is the learned policy:
 
-Simulations can be included in the `src/main/yaml` folder,
-and executed via the `runAll` Gradle task.
+## Scenario 2: Follow the leader
 
-For each YAML file in `src/main/yaml` a task `runFileName` will be created.
+In the rest of the simulations, there is a combination between aggregate computing and 
+deep reinforcement learning. In particular, in this case aggregate computing is used to share 
+the information of the leader in the system. Then, Q learning is used to learn how to follow it.
 
-In order to launch, open a terminal and move to the project root folder, then on UNIX:
-```bash
-./gradlew runAlchemist
-```
-On Windows:
-```
-gradlew.bat runAlchemist
-```
+This is the performance at the beginning of the training phase:
 
-Press <kb>P</kb> to start the simulation.
-For further information about the gui, see the [graphical interface shortcuts](https://alchemistsimulator.github.io/wiki/usage/gui/).
+This is the learned policy:
 
-Note that the first launch will be rather slow, since Gradle will download all the required files.
-They will get cached in the user's home folder (as per Gradle normal behavior).
-
-## Command line interface
-
-The CLI supports the following options
-
-| Option                                     | Effect                                                                                                                                                                            |
-|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| -b,--batch                                 | Runs in batch mode. If one or more -var parameters are specified, multiple simulation runs will be executed in parallel with all the combinations of values.                      |
-| -bmk,--benchmark \<file>                    | Performs a benchmark with the provided simulation, measuring the total execution time. Saves result in given file.                                                                |
-| -cc,--comment-char                         | Sets the char that will be used to mark a data file line as commented. Defaults to #. (To be implemented)                                                                         |
-| -d,--distributed \<file>                    | Distribute simulations in computer grid                                                                                                                                           |
-| -e,--export \<file>                         | Exports the results onto a file                                                                                                                                                   |
-| -g,--effect-stack \<file>                   | Loads an effect stack from file. Does nothing if in headless mode (because --batch and/or --headless are enabled)                                                                 |
-| -h,--help                                  | Print this help and quits the program                                                                                                                                             |
-| -hl,--headless                             | Disable the graphical interface (automatic in batch mode)                                                                                                                         |
-| -i,--interval \<interval>                   | Used when exporting data. Specifies how much simulated time units should pass between two samplings. Defaults to 1.                                                               |
-| -p,--parallelism \<arg>                     | Sets how many threads will be used in batch mode (default to the number of cores of your CPU).                                                                                    |
-| -q,--quiet                                 | Quiet mode: print only error-level informations.                                                                                                                                  |
-| -qq,--quiet-quiet                          | Super quiet mode: the simulator does not log anything. Go cry somewhere else if something goes wrong and you have no clue what.                                                   |
-| -s,--serv \<Ignite note configuration file> | Start Ignite cluster node on local machine                                                                                                                                        |
-| -t,--end-time \<Time>                       | The simulation will be concluded at the specified time. Defaults to infinity.                                                                                                     |
-| -v,--verbose                               | Verbose mode: prints info-level informations. Slows the simulator down.                                                                                                           |
-| -var,--variable \<var1 var2 ... varN>       | Used with -b. If the specified variable exists in the Alchemist YAML file, it is added to the pool of  variables. Be wary: complexity quickly grows with the number of variables. |
-| -vv,--vverbose                             | Very verbose mode: prints debug-level informations. Slows the simulator down. A lot.                                                                                              |
-| -vvv,--vvverbose                           | Very very verbose mode: prints trace-level informations. Slows the simulator down. An awful lot.                                                                                  |
-| -y,--yaml \<file>                           | Load the specified Alchemist YAML file                                                                                                                                            |
