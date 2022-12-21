@@ -16,7 +16,7 @@ environment:
   parameters: []
   global-programs:
     - time-distribution: 1
-      type: CentralServer
+      type: CentralLearner
       parameters: [ 0.05, *targetDistance, *rewardFunction, *actionSpace]
 
 network-model:
