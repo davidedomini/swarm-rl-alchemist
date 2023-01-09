@@ -20,12 +20,10 @@ class Actor(nn.Module):
 
         self.actor = nn.Sequential(
             nn.Linear(num_inputs, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, hidden_size),
-            nn.ReLU(),
-            nn.Linear(hidden_size, num_outputs),
             nn.Tanh(),
-
+            nn.Linear(hidden_size, hidden_size),
+            nn.Tanh(),
+            nn.Linear(hidden_size, num_outputs)
         )
         self.log_std = nn.Parameter(torch.full((num_outputs,), std * std))
 
@@ -33,7 +31,7 @@ class Actor(nn.Module):
 
     def forward(self, x):
         mu      = self.actor(x)
-        std     = self.log_std.expand_as(mu)
+        std     = self.log_std#.expand_as(mu)
         cov_mat = torch.diag_embed(std)
         dist    = MultivariateNormal(mu, cov_mat)
         return dist

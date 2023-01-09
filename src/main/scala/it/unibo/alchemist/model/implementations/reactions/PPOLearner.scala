@@ -22,13 +22,14 @@ class PPOLearner[T, P <: Position[P]](
     val input: Int,
     val updatePeriod: Int
 ) extends AbstractGlobalReaction[T, P](environment, distribution) {
+  // TODO improve the whole structure, generalize the concept, make a library? Domini works?
   private val gamma = 0.99
   private val tau = 0.95
   private val learningRate = 0.0004
   private var ticks = 1
   private val minibatch = 32
-  private val clipParameter = 0.01
-  private val ppoEpochs = 16
+  private val clipParameter = 0.2
+  private val ppoEpochs = 4
   private var episodeTicks = 1
   private var globalStateBuffer: Queue[py.Dynamic] = Queue.empty
   private var localObservationBuffer: Queue[py.Dynamic] = Queue.empty
@@ -39,7 +40,6 @@ class PPOLearner[T, P <: Position[P]](
   private var initialPosition: List[P] = List.empty[P] // used to restart the simulation with the same configuration
   private val actorNetwork = PPOLearner.actor(input, 2) // movement
   private var criticNetwork: py.Dynamic = null
-
   private var optimizer: py.Dynamic = null
 
   override def initializationComplete(time: Time, environment: Environment[T, _]): Unit = {
@@ -59,7 +59,7 @@ class PPOLearner[T, P <: Position[P]](
       var gae: py.Dynamic = py.eval("0")
       var returns: List[py.Dynamic] = List.empty
       rewardBuffer = rewardBuffer.drop(1)
-      rewardBuffer.zipWithIndex.reverse.foreach { case (reward, index) =>
+      rewardBuffer.zipWithIndex.reverse.tail.foreach { case (reward, index) =>
         val delta = py"$reward + $gamma * ${valueBuffer(index + 1)} - ${valueBuffer(index)}"
         gae = py"$delta + $gamma * $tau * $gae"
         returns = (gae + valueBuffer(index)) :: returns
@@ -73,19 +73,13 @@ class PPOLearner[T, P <: Position[P]](
       }
       actionLog = actionLog.map(_.detach())
       valueBuffer = valueBuffer.map(_.detach())
-      var advantages: Seq[py.Dynamic] = returns.zip(valueBuffer).map { case (ret, value) => ret - value }
-      /*val advantagesTensor = torch.tensor(advantages.toPythonCopy)
-      val advantageNormalized =
-        ((advantagesTensor - advantagesTensor.mean()) / (advantagesTensor.std() + 1e-10)).clamp(-1, 1)
-      advantages = advantageNormalized.tolist().as[List[Seq[Double]]].map { seq =>
-        torch.tensor(seq.toPythonCopy)
-      }*/
+      val advantages: Seq[py.Dynamic] = returns.zip(valueBuffer).map { case (ret, value) => ret - value }
       criticNetwork.train()
       actorNetwork.train()
       for (epoch <- 1 to this.ppoEpochs) {
         print(s"Epoch: $epoch ")
         var totalLoss = py"0"
-        val randomPicking = np.random.randint(0, globalStateBuffer.size - 1, minibatch).tolist().as[Seq[Int]]
+        val randomPicking = np.random.randint(0, advantages.size - 1, minibatch).tolist().as[Seq[Int]]
         for (pick <- randomPicking) {
           val state = globalStateBuffer(pick)
           val obs = localObservationBuffer(pick)
@@ -101,7 +95,7 @@ class PPOLearner[T, P <: Position[P]](
           val surrogate1 = ratio * advantage
           val surrogate2 = torch.clamp(ratio, 1.0 - clipParameter, 1.0 + clipParameter) * advantage
           val actorLoss = -torch.min(surrogate1, surrogate2).mean()
-          val criticLoss = (ret - criticValue).pow(2).mean()
+          val criticLoss = torch.nn.functional.huber_loss(ret, criticValue).mean()
           val loss = py"0.5 * $criticLoss + $actorLoss - 0.01 * ${entropy.mean()}" // .sum() // .mean()
           optimizer.zero_grad()
           loss.backward()
@@ -142,7 +136,7 @@ class PPOLearner[T, P <: Position[P]](
       // .map(observation => torch.tensor(observation))
       val observationTensor = torch.tensor(inputObservations.toPythonCopy)
       val distributions = actorNetwork(observationTensor)
-      val action = distributions.sample().clamp(-1, 1)
+      val action = distributions.sample() // .clamp(-1, 1)
       val actionsList = action.detach().tolist().as[Seq[Seq[Double]]]
       agents.zip(actionsList).foreach { case (node, action) =>
         val nodePosition = environment.getPosition(node)
@@ -167,6 +161,12 @@ class PPOLearner[T, P <: Position[P]](
 }
 
 object PPOLearner {
+  /*case class Experience[R](state: R, observation: R, action: R, logProbability: R, reward: R, value: R)
+  class Buffer[R]() {
+    private var buffer:
+    def insert(state: R, observation: R, action: R, logProbability: R, reward: R, value: R) =
+
+  }*/
   val np = py.module("numpy")
   val sys = py.module("sys")
   sys.path.insert(0, "./src/main/python") // otherwise it cannot get the definition
