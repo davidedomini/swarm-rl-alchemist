@@ -1,0 +1,43 @@
+incarnation: scafi
+
+variables:
+  seed: {min: 0, max: 0, step: 1, default: 0}
+  targetDistance: &targetDistance { formula: 0.2 }
+  rewardFunction: &rewardFunction
+    formula: |
+      import it.unibo.script._
+      new it.unibo.model.CohesionAndCollision(targetDistance)
+    language: scala
+  inputShape: &inputShape
+    formula: 10
+    language: scala
+  updatePeriod: &updatePeriod 100
+environment:
+  type: Continuous2DEnvironment
+  parameters: []
+  global-programs:
+    - time-distribution: 1
+      type: PPOLearner
+      parameters: [ *targetDistance, *rewardFunction, *inputShape, *updatePeriod]
+
+network-model:
+  type: ClosestN
+  parameters: [5]
+
+_reactions:
+  - program: &program
+      - time-distribution:
+          type: DiracComb
+          parameters: [ 1.0 ]
+        type: Event
+        actions:
+          - type: RunScafiProgram
+            parameters: [it.unibo.CohesionAndCollisionAgent, 1.1]
+      - program: send
+
+deployments:
+  type: Grid
+  parameters: [-5, -5, 5, 5, 2, 2, 1, 1]
+  #programs:
+    #- *program
+
