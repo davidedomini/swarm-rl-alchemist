@@ -1,0 +1,31 @@
+incarnation: scafi
+
+variables:
+  actionSpace: &actionSpace { formula: it.unibo.experiment.cc.CCActions.toSeq(), language: scala }
+
+_policy: &policy >
+  "path/to/the/policy"
+
+network-model:
+  type: ClosestN
+  parameters: [ 3 ]
+
+_reactions:
+  - program: &program
+      - time-distribution:
+          type: DiracComb
+          parameters: [ 0.0,  1.0 ]
+        type: Event
+        actions:
+          - type: RunScafiProgram
+            parameters: [ it.unibo.experiment.cc.visualizer.it.unibo.CCAgent ]
+      - program: send
+
+deployments:
+  type: Grid
+  parameters: [-5, -5, 5, 5, 2, 2, 1, 1] # 25 agents
+  programs:
+    - *program
+  content:
+    - molecule: policyPath
+      concentration: *policy
