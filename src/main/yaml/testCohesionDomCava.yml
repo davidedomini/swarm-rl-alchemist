@@ -4,7 +4,7 @@ variables:
   actionSpace: &actionSpace { formula: it.unibo.experiment.cc.CCActions.toSeq(), language: scala }
 
 _policy: &policy >
-  "path/to/the/policy"
+  "result/cohesion-dom-cava"
 
 network-model:
   type: ClosestN
