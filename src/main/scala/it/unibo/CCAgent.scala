@@ -24,7 +24,7 @@ class CCAgent
   }
 
   override def main(): Unit = {
-    val policyPath = node.get("policyPath").toString + s"agent-${mid()}"
+    val policyPath = node.get("policyPath").toString + s"-agent-${mid()}"
     val policy = policyFromNetworkSnapshot(policyPath, 32, encoding, CCActions.toSeq())
     val distances = excludingSelf
       .reifyField(nbrVector())
