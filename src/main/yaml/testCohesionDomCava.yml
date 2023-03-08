@@ -8,7 +8,7 @@ _policy: &policy >
 
 network-model:
   type: ClosestN
-  parameters: [ 3 ]
+  parameters: [ 5 ]
 
 _reactions:
   - program: &program

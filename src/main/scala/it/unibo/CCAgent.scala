@@ -15,7 +15,7 @@ class CCAgent
     with CustomSpawn {
 
   private val encoding = new NeuralNetworkEncoding[CCState] {
-    override def elements: Int = 6
+    override def elements: Int = 10
 
     override def toSeq(elem: CCState): Seq[Double] = {
       val fill = List.fill(elements)(0.0)
@@ -32,14 +32,14 @@ class CCAgent
       .sortBy(_._2.distance(Point3D.Zero))
       .map(_._2)
       .map(point => (point.x, point.y))
-      .take(3)
-    val state = CCState(distances, (currentPosition()._1, currentPosition()._2), mid())
+      .take(5)
+    val state = CCState(distances, mid())
     val action = policy(state)
     makeAction(action)
   }
 
   private def makeAction(action: Action): Unit = {
-    val dt = 1
+    val dt = 0.01
     val agent = alchemistEnvironment.getNodeByID(mid())
     action match {
       case NoAction => // do nothing
